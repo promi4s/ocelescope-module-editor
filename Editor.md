@@ -4,9 +4,9 @@
 
 - [x] alle events von der activity A mit mind. 1 E2O relation zu ienem object vom typ OT
 
-- [ ] gegeben eine A2OT kombi: alle objekte die in einem event von typ A vorkommen welches mind. ein objekt vom typ OT hat.
-
 - [ ] Filtern auf NA values
+
+- [ ] gegeben eine A2OT kombi: alle objekte die in einem event von typ A vorkommen welches mind. ein objekt vom typ OT hat.
 
 - [ ] rausschmeißen bei attribute + value kombinations
 
@@ -20,4 +20,4 @@
 
 - [x] Add o2o relations und add E2O relations.
 
-- [ ] Add new object/add new event
+- [x] Add new object/add new event
