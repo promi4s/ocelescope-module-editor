@@ -6,7 +6,7 @@
 
   - [x] attribute wert als type notion für alle wo der wert nicht NA ist (toggle NA droppen oder as is)
 
-- [ ] trace-merger: ich gebe als input 1) setes von objekten und eine object id (darf nicht vorhanden sein (mapping: new object id -> set objects) und 2) ein mapping neue IDs + object type (darf schon vorhanden sein) und 3) (optional) eine vorhandene obvject ID von der die attribute kopiert werden (neue id auf altes object). für jede neue ID: für alle events in die mindestens eines der objekte im set involviert ist fügen wir ein neues objekt mit neuer object id, vom neuen object type und attribute werten vom optonalen koperten objekt hinzu.
+- [x] trace-merger: ich gebe als input 1) setes von objekten und eine object id (darf nicht vorhanden sein (mapping: new object id -> set objects) und 2) ein mapping neue IDs + object type (darf schon vorhanden sein) und 3) (optional) eine vorhandene obvject ID von der die attribute kopiert werden (neue id auf altes object). für jede neue ID: für alle events in die mindestens eines der objekte im set involviert ist fügen wir ein neues objekt mit neuer object id, vom neuen object type und attribute werten vom optonalen koperten objekt hinzu.
 
 - [x] Add o2o relations und add E2O relations.
 
@@ -69,3 +69,19 @@
   - Using ocel mapping allows to additionally add a type and timestampe using ("ocel:activity"| "ocel:otype") for type and  ("ocel:timestamp") for a timestamp
 
     - The type and activity input in that case are fallthroughs
+
+### Add Relations
+
+- **Input**
+
+  - By hand:
+    -(Source | Target): Either by type, id or ocel mapping (again using only the ids of the respected tables)
+    - Qualifier (optional): A qualifer for the relations
+
+  - By mapping
+    - Using the relation table of a mapping meaning either.
+    - Qualifier fallback for when no qualifier was given
+
+### Merge Objects
+
+.
