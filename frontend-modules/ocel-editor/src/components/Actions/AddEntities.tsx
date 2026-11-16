@@ -1,5 +1,6 @@
 import {
 	Autocomplete,
+	Checkbox,
 	Divider,
 	SegmentedControl,
 	Stack,
@@ -51,20 +52,48 @@ const EntitiesInput = ({
 				onChange={(ids) => onChange({ ...value, ids })}
 			/>
 		) : (
-			<MappingSelect
-				description={`A new ${entity} for each one its ${entity}s table lists`}
-				value={value.mappingId}
-				onChange={(mappingId) => onChange({ ...value, mappingId })}
-			/>
+			<>
+				<MappingSelect
+					description={`A new ${entity} for each one its ${entity}s table lists`}
+					value={value.mappingId}
+					onChange={(mappingId) => onChange({ ...value, mappingId })}
+				/>
+				<Checkbox
+					radius={0}
+					label="Only use the ids"
+					description={`Ignore the mapping's other columns; every new ${entity} gets the values entered below`}
+					checked={value.idsOnly ?? false}
+					onChange={(e) =>
+						onChange({ ...value, idsOnly: e.currentTarget.checked })
+					}
+				/>
+			</>
 		)}
 	</Stack>
 );
 
-/** How the mapping's own column fills in for a value left empty. */
-const fromMapping = (entities: Entities, column: string) =>
-	entities.kind === "mapping"
-		? `Leave empty to take each one's from the mapping's ${column} column`
+/** Whether the values come from the mapping, with the entered ones as fallbacks. */
+const fromMappingValues = (entities: Entities) =>
+	entities.kind === "mapping" && !entities.idsOnly;
+
+/** How an entered value relates to the mapping's own column. */
+const fromMapping = (entities: Entities, entity: string, column: string) =>
+	fromMappingValues(entities)
+		? `Each ${entity} takes the mapping's ${column}; this is for those without one. Left empty, those are skipped`
 		: undefined;
+
+/** What a summary shows for a value: the mapping's, the entered one, or both. */
+const valueName = (
+	entities: Entities,
+	value: string | null | undefined,
+	mapped: string,
+	missing: string,
+) =>
+	fromMappingValues(entities)
+		? value
+			? `${mapped}, else ${value}`
+			: mapped
+		: value || missing;
 
 const EntitiesName = ({ entities }: { entities: Entities }) => {
 	if (entities.kind === "mapping") {
@@ -92,7 +121,7 @@ const valueProblem = (
 	entities: Entities,
 	value: string | null | undefined,
 	message: string,
-) => (entities.kind === "ids" && !value?.trim() ? message : undefined);
+) => (!fromMappingValues(entities) && !value?.trim() ? message : undefined);
 
 const sortedKeys = (counts?: Record<string, number>) =>
 	Object.keys(counts ?? {}).sort((a, b) => a.localeCompare(b));
@@ -117,7 +146,7 @@ const AddObjectsPanel: ActionPanel<"add-objects"> = ({
 				radius={0}
 				label="Object type"
 				placeholder="Existing or new"
-				description={fromMapping(step.entities, "ocel:type")}
+				description={fromMapping(step.entities, "object", "ocel:type")}
 				data={sortedKeys(counts)}
 				value={step.objectType ?? ""}
 				onChange={(objectType) =>
@@ -148,7 +177,7 @@ const AddEventsPanel: ActionPanel<"add-events"> = ({
 				radius={0}
 				label="Activity"
 				placeholder="Existing or new"
-				description={fromMapping(step.entities, "ocel:activity")}
+				description={fromMapping(step.entities, "event", "ocel:activity")}
 				data={sortedKeys(counts)}
 				value={step.activity ?? ""}
 				onChange={(activity) =>
@@ -160,7 +189,7 @@ const AddEventsPanel: ActionPanel<"add-events"> = ({
 				type="datetime-local"
 				step={1}
 				label="Timestamp"
-				description={fromMapping(step.entities, "ocel:timestamp")}
+				description={fromMapping(step.entities, "event", "ocel:timestamp")}
 				value={step.timestamp ?? ""}
 				onChange={(e) =>
 					onChange({ ...step, timestamp: e.currentTarget.value || null })
@@ -173,7 +202,7 @@ const AddEventsPanel: ActionPanel<"add-events"> = ({
 export const AddObjects: ActionKind<"add-objects"> = {
 	title: "Add Objects",
 	description:
-		"Adds new objects: one for each id of a list, or for each object an OCEL mapping lists. A type entered here is every new object's; from a mapping, each takes its ocel:type otherwise. Ids the log already has are refused.",
+		"Adds new objects: one for each id of a list, or for each object an OCEL mapping lists. From a list, or a mapping read for its ids only, every new object gets the type entered here; from a mapping, each takes its ocel:type, and the type entered here only fills in where that is missing. Objects without a type, ids the log already has, and ids the mapping lists with different types are skipped.",
 	Panel: AddObjectsPanel,
 	create: () => ({
 		type: "add-objects",
@@ -183,7 +212,7 @@ export const AddObjects: ActionKind<"add-objects"> = {
 	summary: ({ entities, objectType }) => (
 		<>
 			<EntitiesName entities={entities} />
-			{` → ${objectType || (entities.kind === "mapping" ? "their types" : "type")}`}
+			{` → ${valueName(entities, objectType, "their types", "type")}`}
 		</>
 	),
 	validate: ({ entities, objectType }) => {
@@ -203,7 +232,7 @@ export const AddObjects: ActionKind<"add-objects"> = {
 export const AddEvents: ActionKind<"add-events"> = {
 	title: "Add Events",
 	description:
-		"Adds new events: one for each id of a list, or for each event an OCEL mapping lists. An activity or timestamp entered here is every new event's; from a mapping, each takes its ocel:activity and ocel:timestamp otherwise. Ids the log already has are refused.",
+		"Adds new events: one for each id of a list, or for each event an OCEL mapping lists. From a list, or a mapping read for its ids only, every new event gets the activity and timestamp entered here; from a mapping, each takes its ocel:activity and ocel:timestamp, and the values entered here only fill in where those are missing or not a valid time. Events without an activity or timestamp, ids the log already has, and ids the mapping lists with different values are skipped.",
 	Panel: AddEventsPanel,
 	create: () => ({
 		type: "add-events",
@@ -214,7 +243,7 @@ export const AddEvents: ActionKind<"add-events"> = {
 	summary: ({ entities, activity }) => (
 		<>
 			<EntitiesName entities={entities} />
-			{` → ${activity || (entities.kind === "mapping" ? "their activities" : "activity")}`}
+			{` → ${valueName(entities, activity, "their activities", "activity")}`}
 		</>
 	),
 	validate: ({ entities, activity, timestamp }) => {

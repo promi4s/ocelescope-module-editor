@@ -46,3 +46,26 @@
 - **How it works details**:
   - **static:** Rename the types of each of the selected ids with the static name else the use their old name
   - **attibutes**: For attributes the last value is used.
+
+### Add Objects / Events
+
+- **Input**
+
+  - Added Ids:
+
+    - By hand: Add a list of ids
+
+    - By OCEL mapping:
+
+      - Use the events or objects table of a ocel mapping to add a list of new ids
+
+  - Object Type / Activity Input:
+    - Select a existing object type | acitivity
+    - Write a new  type
+
+- **How it works:**
+
+  - ids that are already in the log are ignored.
+  - Using ocel mapping allows to additionally add a type and timestampe using ("ocel:activity"| "ocel:otype") for type and  ("ocel:timestamp") for a timestamp
+
+    - The type and activity input in that case are fallthroughs

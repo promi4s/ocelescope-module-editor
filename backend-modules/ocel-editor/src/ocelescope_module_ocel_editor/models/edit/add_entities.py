@@ -33,6 +33,8 @@ class MappingEntities(BaseResponse):
 
     kind: Literal["mapping"]
     mapping_id: str
+    ids_only: bool = False
+    """Read only the ids from the mapping, and ignore its other columns."""
 
 
 NewEntities = Annotated[IdEntities | MappingEntities, Field(discriminator="kind")]
@@ -69,7 +71,11 @@ def add_entities(
         available = set()
     else:
         source = resources.table(step, entities.mapping_id, OCELMapping, table)
-        available = set(step.sql(f"SELECT * FROM {source} LIMIT 0").columns)
+        available = (
+            set()
+            if entities.ids_only
+            else set(step.sql(f"SELECT * FROM {source} LIMIT 0").columns)
+        )
 
     values = []
     for name, sql_type, entered in columns:
