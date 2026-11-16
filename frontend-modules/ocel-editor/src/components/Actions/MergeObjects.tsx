@@ -3,6 +3,7 @@ import {
 	Group,
 	SegmentedControl,
 	Stack,
+	Text,
 	TextInput,
 } from "@mantine/core";
 import { useObjectCounts } from "@ocelescope/api-base";
@@ -50,7 +51,11 @@ const MergeObjectsPanel: ActionPanel<"merge-objects"> = ({
 			<SelectionInput
 				ocelId={ocelId}
 				entityType="object"
-				title="Objects to merge"
+				title={
+					<Text size="sm" fw={500}>
+						Objects to merge
+					</Text>
+				}
 				viewId={viewId}
 				value={step.objects}
 				onChange={(objects) => onChange({ ...step, objects })}

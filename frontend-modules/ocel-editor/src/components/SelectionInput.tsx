@@ -4,7 +4,6 @@ import {
 	InlineStyles,
 	Stack,
 	type StackProps,
-	Text,
 	UnstyledButton,
 } from "@mantine/core";
 import {
@@ -15,7 +14,7 @@ import {
 	viewProps,
 } from "@ocelescope/core";
 import { ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import type {
 	IdSelection,
 	MappingSelection,
@@ -84,82 +83,54 @@ export const SelectionInput = ({
 	value,
 	onChange,
 	...props
-}: Omit<StackProps, "onChange"> & {
+}: Omit<StackProps, "onChange" | "title"> & {
 	ocelId: string;
 	entityType: "object" | "event";
-	title?: string;
+	title?: ReactNode;
 	viewId: string | null;
 	value: Selection;
 	onChange: (value: Selection) => void;
 }) => {
-	const Picker = entityType === "object" ? ObjectTypePicker : ActivityPicker;
-	const IdPicker = entityType === "object" ? ObjectPicker : EventPicker;
+	const isObject = entityType === "object";
+	const Picker = isObject ? ObjectTypePicker : ActivityPicker;
+	const IdPicker = isObject ? ObjectPicker : EventPicker;
 	const [expanded, setExpanded] = useState(true);
-	const entities = entityType === "object" ? "Objects" : "Events";
-	const label =
-		title ??
-		(value.kind === "mapping"
-			? `${entities} of mapping`
-			: value.kind === "ids"
-				? entities
-				: entityType === "object"
-					? "Object types"
-					: "Activities");
 
 	return (
 		<Stack gap={4} className={PICKER_CLASS} {...props}>
 			<MaxHeightStyles />
-			<Group justify="space-between" wrap="nowrap">
-				{value.kind === "types" ? (
-					<UnstyledButton
-						flex={1}
-						miw={0}
-						onClick={() => setExpanded((expanded) => !expanded)}
-						aria-expanded={expanded}
-					>
-						<Group gap={6} wrap="nowrap">
-							<ChevronRight
-								size={16}
-								style={{
-									flex: "none",
-									transform: expanded ? "rotate(90deg)" : undefined,
-									transition: "transform 150ms ease",
-								}}
-							/>
-							<Text size="sm" fw={500} style={{ flex: "none" }}>
-								{label}
-							</Text>
-							{!expanded && (
-								<Text size="sm" c="dimmed" truncate miw={0}>
-									{value.names.join(", ") || "None picked"}
-								</Text>
-							)}
-						</Group>
-					</UnstyledButton>
-				) : (
-					<Text size="sm" fw={500}>
-						{label}
-					</Text>
-				)}
+			<Group gap={4} wrap="nowrap">
+				<UnstyledButton
+					flex={1}
+					miw={0}
+					aria-expanded={expanded}
+					onClick={() => setExpanded((expanded) => !expanded)}
+				>
+					<Group justify="space-between" wrap="nowrap">
+						<div>{title}</div>
+						<ChevronRight
+							size={16}
+							style={{
+								flex: "none",
+								transform: expanded ? "rotate(90deg)" : undefined,
+								transition: "transform 150ms ease",
+							}}
+						/>
+					</Group>
+				</UnstyledButton>
 				<ModeMenu
 					label="Select by"
 					value={value.kind}
 					onChange={(kind) => onChange(selections[kind])}
 					options={[
-						{
-							value: "types",
-							label: entityType === "object" ? "Object type" : "Activity",
-						},
-						{
-							value: "ids",
-							label: entityType === "object" ? "Object ids" : "Event ids",
-						},
+						{ value: "types", label: isObject ? "Object type" : "Activity" },
+						{ value: "ids", label: isObject ? "Object ids" : "Event ids" },
 						{ value: "mapping", label: "OCEL mapping" },
 					]}
 				/>
 			</Group>
-			{value.kind === "types" ? (
-				<Collapse expanded={expanded}>
+			<Collapse expanded={expanded}>
+				{value.kind === "types" ? (
 					<Picker
 						variant="list"
 						multiple
@@ -169,22 +140,22 @@ export const SelectionInput = ({
 						value={value.names}
 						onChange={(names) => onChange({ ...value, names })}
 					/>
-				</Collapse>
-			) : value.kind === "ids" ? (
-				<IdPicker
-					multiple
-					ocelId={ocelId}
-					ocelVersion="original"
-					value={value.ids}
-					onChange={(ids) => onChange({ ...value, ids })}
-				/>
-			) : (
-				<MappingSelect
-					label={undefined}
-					value={value.mappingId}
-					onChange={(mappingId) => onChange({ ...value, mappingId })}
-				/>
-			)}
+				) : value.kind === "ids" ? (
+					<IdPicker
+						multiple
+						ocelId={ocelId}
+						ocelVersion="original"
+						value={value.ids}
+						onChange={(ids) => onChange({ ...value, ids })}
+					/>
+				) : (
+					<MappingSelect
+						label={undefined}
+						value={value.mappingId}
+						onChange={(mappingId) => onChange({ ...value, mappingId })}
+					/>
+				)}
+			</Collapse>
 		</Stack>
 	);
 };

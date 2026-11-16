@@ -1,4 +1,10 @@
-import { Divider, SegmentedControl, Stack, TextInput } from "@mantine/core";
+import {
+	Divider,
+	SegmentedControl,
+	Stack,
+	Text,
+	TextInput,
+} from "@mantine/core";
 import type {
 	ActionErrors,
 	ActionKind,
@@ -70,7 +76,11 @@ const AddRelationsPanel: ActionPanel<AddType> = ({
 					<SelectionInput
 						ocelId={ocelId}
 						entityType={sourceType}
-						title={sourceType === "event" ? "Source events" : "Source objects"}
+						title={
+							<Text size="sm" fw={500}>
+								{sourceType === "event" ? "Source events" : "Source objects"}
+							</Text>
+						}
 						viewId={viewId}
 						value={relations.sources}
 						onChange={(sources) =>
@@ -81,7 +91,11 @@ const AddRelationsPanel: ActionPanel<AddType> = ({
 					<SelectionInput
 						ocelId={ocelId}
 						entityType="object"
-						title="Target objects"
+						title={
+							<Text size="sm" fw={500}>
+								Target objects
+							</Text>
+						}
 						viewId={viewId}
 						value={relations.targets}
 						onChange={(targets) =>
