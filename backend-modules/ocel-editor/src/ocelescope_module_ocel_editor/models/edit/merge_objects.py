@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Literal
 
 from ocelescope.ocel.constants import (
     E2O_QUALIFIER,
@@ -21,7 +21,6 @@ from ocelescope.ocel.view import Step
 from ocelescope.util.sql import ident, literal
 from pydantic import Field
 
-from ocelescope_module_ocel_editor.models.base import BaseResponse
 from ocelescope_module_ocel_editor.models.edit.base import (
     EditorActionBase,
     Resources,
@@ -32,34 +31,15 @@ from ocelescope_module_ocel_editor.models.edit.selection import (
 )
 
 
-class KeepQualifiers(BaseResponse):
-    """One relation per qualifier the merged objects had to the event."""
-
-    kind: Literal["keep"]
-
-
-class FixedQualifier(BaseResponse):
-    """One relation to each event, under ``name``."""
-
-    kind: Literal["fixed"]
-    name: str = Field(min_length=1)
-
-
-MergedQualifier = Annotated[
-    KeepQualifiers | FixedQualifier, Field(discriminator="kind")
-]
-
-
 class MergeObjects(EditorActionBase):
     """Replace the selected objects by one new object.
 
     ``new_id`` must not be in the log; ``object_type`` may be. The new object is
     related to every event any selected object is, and the selected objects are
-    gone afterwards. Their O2O relations move to the new object or are dropped,
-    as ``object_relations`` says; a moved relation between two selected objects
-    is dropped either way. The new object takes each attribute of ``copy_from``,
-    if given, once: at its first or last value, as ``copy_at`` says, under the
-    timestamp of that value.
+    gone afterwards. Their O2O relations move to the new object, except those
+    between two selected objects, which would loop on it. The new object takes
+    each attribute of ``copy_from``, if given, once: at its first or last value,
+    as ``copy_at`` says, under the timestamp of that value.
     """
 
     type: Literal["merge-objects"]
@@ -68,8 +48,8 @@ class MergeObjects(EditorActionBase):
     objects: Selection
     copy_from: str | None = None
     copy_at: Literal["start", "end"] = "start"
-    qualifier: MergedQualifier
-    object_relations: Literal["move", "drop"]
+    qualifier: str | None = None
+    """The qualifier of the new object's event relations, if any."""
 
     def build(self, step: Step, resources: Resources) -> None:
         self._check_ids(step)
@@ -112,11 +92,7 @@ class MergeObjects(EditorActionBase):
         eid, oid = ident(EID_COL), ident(OID_COL)
         qualifier = ident(E2O_QUALIFIER)
         new_id = literal(self.new_id)
-        merged_qualifier = (
-            f"r.{qualifier}"
-            if isinstance(self.qualifier, KeepQualifiers)
-            else literal(self.qualifier.name)
-        )
+        merged_qualifier = literal(self.qualifier) if self.qualifier else "NULL"
         added = step.materialize(
             "merged_e2o",
             f"""
@@ -140,10 +116,6 @@ class MergeObjects(EditorActionBase):
             WHERE {source} NOT IN (SELECT {oid} FROM {members})
             AND {target} NOT IN (SELECT {oid} FROM {members})
         """
-        if self.object_relations == "drop":
-            step[O2O_TABLE] = kept
-            return
-
         new_id = literal(self.new_id)
         merged = f"IN (SELECT {oid} FROM {members})"
         moved = step.materialize(
@@ -171,7 +143,6 @@ class MergeObjects(EditorActionBase):
             step[OBJECT_CHANGES_TABLE] = kept
             return
 
-        # Each attribute of ``copy_from`` once, at the value ``copy_at`` picks.
         copied = step.materialize(
             "merged_changes",
             f"""

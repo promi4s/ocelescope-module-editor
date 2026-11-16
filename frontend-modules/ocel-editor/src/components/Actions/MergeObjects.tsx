@@ -1,7 +1,6 @@
 import {
 	Autocomplete,
 	Group,
-	Radio,
 	SegmentedControl,
 	Stack,
 	TextInput,
@@ -22,7 +21,7 @@ const MergeObjectsPanel: ActionPanel<"merge-objects"> = ({
 	onChange,
 	viewId,
 }) => {
-	const { qualifier, objectRelations } = step;
+	const { qualifier } = step;
 	const { data: counts } = useObjectCounts(ocelId, viewParams(viewId));
 	const types = Object.keys(counts ?? {}).sort((a, b) => a.localeCompare(b));
 
@@ -77,71 +76,15 @@ const MergeObjectsPanel: ActionPanel<"merge-objects"> = ({
 					]}
 				/>
 			)}
-			<Radio.Group
-				label="Qualifier of the new event relations"
-				value={qualifier.kind}
-				onChange={(kind) =>
-					onChange({
-						...step,
-						qualifier:
-							kind === "fixed" ? { kind: "fixed", name: "" } : { kind: "keep" },
-					})
+			<TextInput
+				radius={0}
+				label="Qualifier of the new event relations (optional)"
+				description="One relation to each event any merged object had"
+				value={qualifier ?? ""}
+				onChange={(e) =>
+					onChange({ ...step, qualifier: e.currentTarget.value || null })
 				}
-			>
-				<Group mt="xs" gap="xl" align="flex-start" wrap="nowrap">
-					<Radio
-						value="keep"
-						label="Keep the originals"
-						description="One relation per qualifier the merged objects had"
-					/>
-					<Radio
-						value="fixed"
-						flex={1}
-						miw={0}
-						styles={{ labelWrapper: { flex: 1 } }}
-						label={
-							<TextInput
-								size="xs"
-								radius={0}
-								placeholder="One qualifier for all"
-								value={qualifier.kind === "fixed" ? qualifier.name : ""}
-								onChange={(e) =>
-									onChange({
-										...step,
-										qualifier: {
-											kind: "fixed",
-											name: e.currentTarget.value,
-										},
-									})
-								}
-							/>
-						}
-					/>
-				</Group>
-			</Radio.Group>
-			<Radio.Group
-				label="O2O relations of the merged objects"
-				value={objectRelations}
-				onChange={(objectRelations) =>
-					onChange({
-						...step,
-						objectRelations: objectRelations as typeof step.objectRelations,
-					})
-				}
-			>
-				<Group mt="xs" gap="xl" align="flex-start" wrap="nowrap">
-					<Radio
-						value="move"
-						label="Move to the new object"
-						description="Those between merged objects are dropped"
-					/>
-					<Radio
-						value="drop"
-						label="Drop"
-						description="They go with the merged objects"
-					/>
-				</Group>
-			</Radio.Group>
+			/>
 		</Stack>
 	);
 };
@@ -156,8 +99,6 @@ export const MergeObjects: ActionKind<"merge-objects"> = {
 		newId: "",
 		objectType: "",
 		objects: selections.ids,
-		qualifier: { kind: "keep" },
-		objectRelations: "move",
 	}),
 	summary: ({ objects, newId }) => (
 		<>
@@ -165,14 +106,12 @@ export const MergeObjects: ActionKind<"merge-objects"> = {
 			{` → ${newId || "new object"}`}
 		</>
 	),
-	validate: ({ newId, objectType, objects, qualifier }) => {
+	validate: ({ newId, objectType, objects }) => {
 		const objectsError = selectionProblem(objects, "object type");
 		return {
 			...(!newId.trim() && { newId: "Enter a new object id" }),
 			...(!objectType.trim() && { objectType: "Enter an object type" }),
 			...(objectsError && { objects: objectsError }),
-			...(qualifier.kind === "fixed" &&
-				!qualifier.name.trim() && { qualifier: "Enter a qualifier" }),
 		};
 	},
 };
