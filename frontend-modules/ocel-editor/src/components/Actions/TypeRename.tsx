@@ -1,4 +1,4 @@
-import { Divider, Group, Input, Radio, Stack, TextInput } from "@mantine/core";
+import { Group, Input, Radio, Stack, TextInput } from "@mantine/core";
 import type { AttributeTypeNameMissing } from "../../api/ocelEditor";
 import type {
 	ActionErrors,
@@ -38,6 +38,8 @@ const TypeRenamePanel: ActionPanel<RenameType> = ({
 	const { selection, newName } = step;
 	const entityType = entityTypes[step.type];
 	const entities = entityType === "object" ? "Objects" : "Events";
+	const nameLabel =
+		entityType === "object" ? "New object type name" : "New activity name";
 
 	return (
 		<Stack gap="md">
@@ -56,7 +58,7 @@ const TypeRenamePanel: ActionPanel<RenameType> = ({
 							flex={1}
 							miw={0}
 							radius={0}
-							label="New name"
+							label={nameLabel}
 							value={newName.name}
 							onChange={(e) =>
 								onChange({
@@ -70,6 +72,7 @@ const TypeRenamePanel: ActionPanel<RenameType> = ({
 							flex={1}
 							miw={0}
 							ocelId={ocelId}
+							label={nameLabel}
 							entityType={entityType}
 							types={selection.kind === "types" ? selection.names : []}
 							viewId={viewId}
