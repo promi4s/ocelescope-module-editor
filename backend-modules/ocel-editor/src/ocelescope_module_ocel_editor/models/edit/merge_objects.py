@@ -97,7 +97,6 @@ class MergeObjects(EditorActionBase):
         self._merge_o2o(step, members)
         self._merge_changes(step, members)
         self._merge_objects(step, members)
-        self._drop_quantities(step, members)
 
     def _check_ids(self, step: Step) -> None:
         oid = ident(OID_COL)
@@ -239,13 +238,3 @@ class MergeObjects(EditorActionBase):
             WHERE {oid} NOT IN (SELECT {oid} FROM {members})
             UNION ALL BY NAME {new_objects}
         """
-
-    @staticmethod
-    def _drop_quantities(step: Step, members: str) -> None:
-        oid = ident(OID_COL)
-        for table in (QUANTITIES_TABLE, QUANTITY_OPERATIONS_TABLE):
-            if table in step.tables:
-                step[table] = (
-                    f"SELECT * FROM {step[table]} "
-                    f"WHERE {oid} NOT IN (SELECT {oid} FROM {members})"
-                )
