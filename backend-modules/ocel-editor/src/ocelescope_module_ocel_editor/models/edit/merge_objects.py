@@ -11,6 +11,7 @@ from ocelescope.ocel.constants import (
     OTYPE_COL,
     TIMESTAMP_COL,
 )
+from ocelescope.ocel.constants.misc import EPOCH_SQL
 from ocelescope.ocel.constants.tables import (
     E2O_TABLE,
     O2O_TABLE,
@@ -39,7 +40,7 @@ class MergeObjects(EditorActionBase):
     gone afterwards. Their O2O relations move to the new object, except those
     between two selected objects, which would loop on it. The new object takes
     each attribute of ``copy_from``, if given, once: at its first or last value,
-    as ``copy_at`` says, under the timestamp of that value.
+    as ``copy_at`` says, as a static attribute (written at the epoch).
     """
 
     type: Literal["merge-objects"]
@@ -146,7 +147,10 @@ class MergeObjects(EditorActionBase):
         copied = step.materialize(
             "merged_changes",
             f"""
-            SELECT * REPLACE ({literal(self.new_id)} AS {oid})
+            SELECT * REPLACE (
+                {literal(self.new_id)} AS {oid},
+                {EPOCH_SQL}::TIMESTAMP AS {timestamp}
+            )
             FROM {step[OBJECT_CHANGES_TABLE]}
             WHERE {oid} = {literal(self.copy_from)}
             QUALIFY row_number() OVER (
