@@ -37,7 +37,7 @@ const EntitiesInput = ({
 			value={value.kind}
 			onChange={(kind) => onChange(newEntities[kind as Entities["kind"]])}
 			data={[
-				{ value: "ids", label: "List of ids" },
+				{ value: "ids", label: "Manually" },
 				{ value: "mapping", label: "From an OCEL mapping" },
 			]}
 		/>
@@ -141,7 +141,6 @@ const AddObjectsPanel: ActionPanel<"add-objects"> = ({
 				value={step.entities}
 				onChange={(entities) => onChange({ ...step, entities })}
 			/>
-			<Divider />
 			<Autocomplete
 				radius={0}
 				label="Object type"
