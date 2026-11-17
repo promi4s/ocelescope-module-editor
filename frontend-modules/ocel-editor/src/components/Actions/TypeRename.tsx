@@ -52,13 +52,25 @@ const TypeRenamePanel: ActionPanel<RenameType> = ({
 				onChange={(selection) => onChange({ ...step, selection })}
 			/>
 			<Stack gap="xs">
-				<Group gap={4} align="flex-end" wrap="nowrap">
+				<Stack gap={4}>
+					<Group justify="space-between" wrap="nowrap">
+						<Input.Label>{nameLabel}</Input.Label>
+						<ModeMenu
+							label="Name by"
+							value={newName.kind}
+							onChange={(kind) =>
+								onChange({ ...step, newName: newNames[kind] })
+							}
+							options={[
+								{ value: "static", label: "Fixed name" },
+								{ value: "attribute", label: "Attribute value" },
+							]}
+						/>
+					</Group>
 					{newName.kind === "static" ? (
 						<TextInput
-							flex={1}
-							miw={0}
 							radius={0}
-							label={nameLabel}
+							aria-label={nameLabel}
 							value={newName.name}
 							onChange={(e) =>
 								onChange({
@@ -69,10 +81,9 @@ const TypeRenamePanel: ActionPanel<RenameType> = ({
 						/>
 					) : (
 						<AttributeSelect
-							flex={1}
-							miw={0}
+							label={undefined}
+							aria-label={nameLabel}
 							ocelId={ocelId}
-							label={nameLabel}
 							entityType={entityType}
 							types={selection.kind === "types" ? selection.names : []}
 							viewId={viewId}
@@ -82,16 +93,7 @@ const TypeRenamePanel: ActionPanel<RenameType> = ({
 							}
 						/>
 					)}
-					<ModeMenu
-						label="Name by"
-						value={newName.kind}
-						onChange={(kind) => onChange({ ...step, newName: newNames[kind] })}
-						options={[
-							{ value: "static", label: "Fixed name" },
-							{ value: "attribute", label: "Attribute value" },
-						]}
-					/>
-				</Group>
+				</Stack>
 				{newName.kind === "attribute" && (
 					<Radio.Group
 						label={`${entities} without an attribute value`}
