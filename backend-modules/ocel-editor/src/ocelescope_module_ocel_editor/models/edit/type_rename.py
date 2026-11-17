@@ -9,10 +9,6 @@ from ocelescope.ocel.constants import (
     OTYPE_COL,
     TIMESTAMP_COL,
 )
-from ocelescope.ocel.constants.quantity import (
-    QUANTITIES_TABLE,
-    QUANTITY_OPERATIONS_TABLE,
-)
 from ocelescope.ocel.constants.tables import (
     E2O_TABLE,
     EVENTS_TABLE,
@@ -153,11 +149,7 @@ class ObjectTypeRename(EditorActionBase):
             (E2O_TABLE, [OID_COL]),
             (O2O_TABLE, [O2O_SOURCE_ID, O2O_TARGET_ID]),
             (OBJECT_CHANGES_TABLE, [OID_COL]),
-            (QUANTITIES_TABLE, [OID_COL]),
-            (QUANTITY_OPERATIONS_TABLE, [OID_COL]),
         ):
-            if table not in step.tables:
-                continue
             step[table] = f"SELECT * FROM {step[table]} WHERE " + " AND ".join(
                 f"{ident(column)} IN (SELECT {oid} FROM {kept})" for column in columns
             )
@@ -204,9 +196,6 @@ class ActivityRename(EditorActionBase):
         kept = step.materialize(
             "kept_events", f"SELECT {eid} FROM {step[EVENTS_TABLE]}"
         )
-        for table in (E2O_TABLE, QUANTITY_OPERATIONS_TABLE):
-            if table not in step.tables:
-                continue
-            step[table] = (
-                f"SELECT * FROM {step[table]} WHERE {eid} IN (SELECT {eid} FROM {kept})"
-            )
+        step[E2O_TABLE] = (
+            f"SELECT * FROM {step[E2O_TABLE]} WHERE {eid} IN (SELECT {eid} FROM {kept})"
+        )
