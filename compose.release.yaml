@@ -1,0 +1,19 @@
+name: ocelescope-editor
+
+services:
+  backend:
+    image: ghcr.io/promi4s/ocelescope-module-editor-backend:latest
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      MODE: production
+  frontend:
+    image: ghcr.io/promi4s/ocelescope-module-editor-frontend:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      EXTERNAL_API_BASE_URL: http://backend:8000
+    depends_on:
+      - backend
