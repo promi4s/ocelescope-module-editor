@@ -60,7 +60,7 @@ const AddRelationsPanel: ActionPanel<AddType> = ({
 					})
 				}
 				data={[
-					{ value: "pairs", label: "Between entities" },
+					{ value: "pairs", label: "Manually" },
 					{ value: "mapping", label: "From an OCEL mapping" },
 				]}
 			/>
