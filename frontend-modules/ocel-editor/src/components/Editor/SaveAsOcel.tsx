@@ -46,6 +46,7 @@ export const SaveAsOcel = ({
 				<Tooltip label="Save as new OCEL" disabled={opened}>
 					<ActionIcon
 						variant="subtle"
+						aria-label="Save as new OCEL"
 						disabled={pipeline.length === 0}
 						onClick={() => setOpened((opened) => !opened)}
 					>

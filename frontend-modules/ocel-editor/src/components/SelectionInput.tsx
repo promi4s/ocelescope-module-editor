@@ -6,13 +6,7 @@ import {
 	type StackProps,
 	UnstyledButton,
 } from "@mantine/core";
-import {
-	ActivityPicker,
-	EventPicker,
-	ObjectPicker,
-	ObjectTypePicker,
-	viewProps,
-} from "@ocelescope/core";
+import { ActivityPicker, ObjectTypePicker, viewProps } from "@ocelescope/core";
 import { ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import type {
@@ -20,6 +14,7 @@ import type {
 	MappingSelection,
 	TypeSelection,
 } from "../api/ocelEditor";
+import { IdPicker } from "./IdPicker";
 import { MappingName, MappingSelect } from "./MappingSelect";
 import { ModeMenu } from "./ModeMenu";
 
@@ -93,7 +88,6 @@ export const SelectionInput = ({
 }) => {
 	const isObject = entityType === "object";
 	const Picker = isObject ? ObjectTypePicker : ActivityPicker;
-	const IdPicker = isObject ? ObjectPicker : EventPicker;
 	const [expanded, setExpanded] = useState(true);
 
 	return (
@@ -144,7 +138,8 @@ export const SelectionInput = ({
 					<IdPicker
 						multiple
 						ocelId={ocelId}
-						ocelVersion="original"
+						viewId={viewId}
+						entityType={entityType}
 						value={value.ids}
 						onChange={(ids) => onChange({ ...value, ids })}
 					/>

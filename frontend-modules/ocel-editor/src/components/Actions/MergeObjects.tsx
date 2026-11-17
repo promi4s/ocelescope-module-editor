@@ -7,8 +7,9 @@ import {
 	TextInput,
 } from "@mantine/core";
 import { useObjectCounts } from "@ocelescope/api-base";
-import { ObjectPicker, viewParams } from "@ocelescope/core";
+import { viewParams } from "@ocelescope/core";
 import type { ActionKind, ActionPanel } from "../../types/edit";
+import { IdPicker } from "../IdPicker";
 import {
 	SelectionInput,
 	SelectionName,
@@ -60,11 +61,12 @@ const MergeObjectsPanel: ActionPanel<"merge-objects"> = ({
 				value={step.objects}
 				onChange={(objects) => onChange({ ...step, objects })}
 			/>
-			<ObjectPicker
+			<IdPicker
 				label="Copy attributes from (optional)"
 				description="The new object takes each attribute once, at the value picked below"
 				ocelId={ocelId}
-				ocelVersion="original"
+				viewId={viewId}
+				entityType="object"
 				value={step.copyFrom}
 				onChange={(copyFrom) => onChange({ ...step, copyFrom })}
 			/>
